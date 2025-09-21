@@ -109,14 +109,16 @@ srv.on('login', function (client) {
 //                        for (const obs of clientList) {
                     if (clientList.length > 1) {
                         if (meta.name === "position") {
-                            clientList[1].write('entity_teleport', {
-                                entityId: entityid,
-                                x: data.x,
-                                y: data.y,
-                                z: data.z,
+                            for (let i = 1; i < clientList.length; i++) {
+                                clientList[i].write('entity_teleport', {
+                                    entityId: entityid,
+                                    x: data.x,
+                                    y: data.y,
+                                    z: data.z,
 
-                                onGround: data.onGround
-                            })
+                                    onGround: data.onGround
+                                })
+                            }
                         }
                         if (meta.name === "position_look") {
                             clientList[1].write('entity_teleport', {
