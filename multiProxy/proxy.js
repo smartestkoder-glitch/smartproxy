@@ -2,10 +2,14 @@ const mc = require('minecraft-protocol')
 const bufferEqual = require("buffer-equal");
 const fs = require("fs");
 const path = require("path");
+const { SocksProxyAgent } = require('socks-proxy-agent')
+const { SocksClient } = require('socks')
 
 const states = mc.states
 
-
+//const proxy = 'socks5://vgvfgmwo:growthup@82.24.217.25:5355'
+//const agent = new SocksProxyAgent(proxy)
+const proxy = '82.24.217.25:5355:vgvfgmwo:growthup'
 function encodeAngle(deg) {
     let d = ((deg % 360) + 540) % 360 - 180;
     // масштабируем в -128..127
@@ -58,12 +62,41 @@ srv.on('login', function (client) {
                 targetClient.end('Error')
             }
         })
+
+
+        const proxyOpt = proxy.split(":");
+
+        const connect = async (clientp) => {
+            await SocksClient.createConnection({
+                proxy: {
+                    host: proxyOpt[0],
+                    port: Number(proxyOpt[1]),
+                    type: 5,
+                    userId: proxyOpt[2],
+                    password: proxyOpt[3]
+                },
+                command: 'connect',
+                destination: {
+                    host: "mc.funtime.su",
+                    port: 25565
+                },
+            }, (err, info) => {
+                if (err) {
+                    return;
+                }
+                clientp.setSocket(info.socket);
+                clientp.emit('connect');
+            });
+        };
+
+
         const targetClient = mc.createClient({
             host: "mc.funtime.su",
             port: 25565,
             username: client.username,
             keepAlive: false,
-            version: "1.16.5"
+            version: "1.16.5",
+            connect: connect
         })
         client.on('packet', function (data, meta) {//Твой ip
             //if (meta.name === "keep_alive") return console.log("ping")
